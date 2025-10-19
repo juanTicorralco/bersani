@@ -7,8 +7,14 @@
     //     $headers = array();
     //     $editProduct = CurlController::request($url,$method,$fields,$headers)->result[0];
     // }
-    //   echo '<pre>'; print_r($editProduct); echo '</pre>'; 
-    //                                      return;
+    $tiketInfo = 0;
+    $tiketContacto = 0;
+    if(isset($_COOKIE["productos"])){
+        $tiketInfo = json_decode($_COOKIE["productos"], true);
+    }
+    if(isset($_COOKIE["contacto"])){
+        $tiketContacto = json_decode($_COOKIE["contacto"], true);
+    }
 ?>
 <div class="ps-checkout ps-section--shopping">
     <div class="container">
@@ -21,7 +27,10 @@
                     <div class="col-xl-5 col-lg-8 col-sm-12">
                         <div class="modal-header">
                             <h5 class="modal-title text-center">Crear ORDEN</h5>
-                            <a href="<?php echo TemplateController::path() ?>acount&registers" class="btn btn-danger">Cancel</a>
+                            <div>
+                                <button type="button" class="btn btn-danger" onclick="borrarTiket('productos', 'contacto',null)">Borrar</button>
+                                <button type="button" class="btn btn-danger" onclick="borrarTiket('productos', 'contacto', '<?php echo TemplateController::path() ?>acount&registers')">cancel</button>
+                            </div>
                         </div>
                         <input type="hidden" value="<?php echo CurlController::api();?>" id="urlApi">
                         <input type="hidden" value="<?php 
@@ -58,7 +67,6 @@
                                         required>
                                         <option value="">Categoria</option>
                                         <?php foreach($categories as $key => $value): ?>
-                                        <?php //echo '<pre>'; print_r($value->id_category); echo '</pre>';  ?>
                                         <option value="<?php echo $value->id_category."_".$value->name_category; ?>"><?php echo $value->name_category; ?></option>
                                             <?php endforeach; ?>
                                         </select>
@@ -101,6 +109,7 @@
                                 </figure>
                                 <div id="stokeorderProduct" class="stokeorderProduct"></div>
                                 <input type="hidden" name="stockApro" id="stockApro" class="stockApro">
+                                <input type="hidden" name="stockCode" id="stockCode" class="stockCode">
                                 <input type="hidden" class="idTalla" >
                                 <input type="hidden" class="idColor" >
                             </div>
@@ -143,6 +152,67 @@
                                         <div class="valid-feedback"></div>
                                         <div class="invalid-feedback">El nombre es requerido</div>
                                     </div>
+                                    <!-- Precio -->
+                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                Precio:
+                                            </span>
+                                        </div>
+                                        <input 
+                                        type="text"
+                                        class="form-control precioProduct"
+                                        placeholder="Precio"
+                                        name="precioProduct"
+                                        id="precioProductAdd"
+                                        required
+                                        pattern = '[.\\,\\0-9]{1,}'
+                                        onchange="validatejs(event, 'numbers')">
+                                        <div class="valid-feedback"></div>
+                                        <div class="invalid-feedback">Acompleta el campo</div>
+                                    </div>
+                                    <!-- Catidad -->
+                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                Cantidad:
+                                            </span>
+                                        </div>
+                                        <input 
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Cantidad"
+                                        name="CantiProduct"
+                                        maxlength="50"
+                                        id="cantidadProductAdd"
+                                        value="1"
+                                        required
+                                        pattern = '[.\\,\\0-9]{1,}'
+                                        onchange="validatejs(event, 'numbers')">
+                                        <div class="valid-feedback"></div>
+                                        <div class="invalid-feedback">Acompleta el campo</div>
+                                    </div>
+                                    <!-- Comentario -->
+                                    <div class="col-12 col-lg-12 form-group__content input-group mx-0 pr-0 mb-3">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                Comentarios:
+                                            </span>
+                                        </div>
+                                        <input 
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Comentarios"
+                                        name="comentProduct"
+                                        id="comentProductAdd"
+                                        maxlength="50"
+                                        required
+                                        pattern = '[-\\(\\)\\=\\%\\&\\$\\;\\_\\*\\"\\#\\?\\¿\\!\\¡\\:\\.\\,\\0-9a-zA-ZñÑáéíóúÁÉÍÓÚ ]{1,}'
+                                        onchange="validatejs(event, 'parrafo')"
+                                        >
+                                        <div class="valid-feedback"></div>
+                                        <div class="invalid-feedback">Acompleta el campo</div>
+                                    </div>
                                     <!-- Peso -->
                                     <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
                                         <div class="input-group-append">
@@ -179,53 +249,14 @@
                                         maxlength="50"
                                         required
                                         pattern = "[.\\,\\0-9]{1,}"
-                                        onchange="validatejs(event, 'numbers')">
+                                        onchange="validatejs(event, 'numbers')"
+                                        onblur="agregarProductTicket('pedido')">
                                         <div class="valid-feedback"></div>
                                         <div class="invalid-feedback">Acompleta el campo</div>
                                     </div>
-                                    <!-- Precio -->
-                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">
-                                                Precio:
-                                            </span>
-                                        </div>
-                                        <input 
-                                        type="text"
-                                        class="form-control precioProduct"
-                                        placeholder="Precio"
-                                        name="precioProduct"
-                                        maxlength="50"
-                                        id="precioProductAdd"
-                                        required
-                                        pattern = '[.\\,\\0-9]{1,}'
-                                        onchange="validatejs(event, 'numbers')">
-                                        <div class="valid-feedback"></div>
-                                        <div class="invalid-feedback">Acompleta el campo</div>
-                                    </div>
-                                   <!-- Catidad -->
-                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">
-                                                Cantidad:
-                                            </span>
-                                        </div>
-                                        <input 
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="Cantidad"
-                                        name="CantiProduct"
-                                        maxlength="50"
-                                        id="cantidadProductAdd"
-                                        value="0"
-                                        required
-                                        pattern = '[.\\,\\0-9]{1,}'
-                                        onchange="validatejs(event, 'numbers')">
-                                        <div class="valid-feedback"></div>
-                                        <div class="invalid-feedback">Acompleta el campo</div>
-                                    </div>
+                                   
                                 </div>
-                                <button type="button" class="ps-btn ps-btn--fullwidth" onclick="agregarProductTicket('pedido')">Agregar</button>
+                                <!-- <button type="button" class="ps-btn ps-btn--fullwidth" onclick="agregarProductTicket('pedido')">Agregar</button> -->
                             </div>
                             <div class="form-group">
                                 <label>ESPESIFICACIONES ENTREGA<sup class="text-danger">*</sup></label>                
@@ -247,19 +278,10 @@
                                         value="0"
                                         required
                                         pattern = '[.\\,\\0-9]{1,}'
-                                        onchange="validatejs(event, 'numbers'),resetCampo('pagoPrev')">
+                                        onchange="validatejs(event, 'numbers')">
                                         <div class="valid-feedback"></div>
                                         <div class="invalid-feedback">Acompleta el campo</div>
                                     </div>
-                                    <!-- Envio -->
-                                    <!-- <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">
-                                                ENVIO:
-                                            </span>
-                                        </div>
-                                        <input class="form-control" id="envioProductAdd" name="envioProduct" type="checkbox">
-                                    </div> -->
                                     <!-- Dia -->
                                     <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
                                         <div class="input-group-append">
@@ -310,7 +332,6 @@
                                         <?php
                                             $data = file_get_contents("views/json/Transportes.json");
                                             $transportes= json_decode($data);
-                                            //echo '<pre>'; print_r($value3->tipoTrasporte); echo '</pre>';
                                         ?>
                                         <select 
                                         class="form-control"
@@ -357,12 +378,32 @@
                                             class="form-control"
                                             name="EstacionProduct"
                                             id="estacionProductAdd"
-                                            onchange="resetCampo('estacion')"
                                             required>
                                             <option value="">Select Color</option>
                                         </select>
                                         <div class="valid-feedback"></div>
                                         <div class="invalid-feedback">El nombre es requerido</div>
+                                    </div>
+                                    <!-- Telefono -->
+                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                Telefono:
+                                            </span>
+                                        </div>
+                                        <input 
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Telefono cliente"
+                                        name="telefonoProduct"
+                                        maxlength="50"
+                                        id="telefonoProductAdd"
+                                        required
+                                        pattern = '[-\\(\\)\\0-9 ]{1,}'
+                                        onchange="validatejs(event, 'phone')"
+                                        onblur="buscarTelefono('<?php echo CurlController::api(); ?>')">
+                                        <div class="valid-feedback"></div>
+                                        <div class="invalid-feedback">Acompleta el campo</div>
                                     </div>
                                     <!-- Nombre -->
                                     <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
@@ -384,26 +425,6 @@
                                         <div class="valid-feedback"></div>
                                         <div class="invalid-feedback">Acompleta el campo</div>
                                     </div>
-                                    <!-- Telefono -->
-                                    <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">
-                                                Telefono:
-                                            </span>
-                                        </div>
-                                        <input 
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="Telefono cliente"
-                                        name="telefonoProduct"
-                                        maxlength="50"
-                                        id="telefonoProductAdd"
-                                        required
-                                        pattern = '[-\\(\\)\\0-9 ]{1,}'
-                                        onchange="validatejs(event, 'phone')">
-                                        <div class="valid-feedback"></div>
-                                        <div class="invalid-feedback">Acompleta el campo</div>
-                                    </div>
                                     <!-- Messenguer -->
                                     <div class="col-12 col-lg-6 form-group__content input-group mx-0 pr-0 mb-3">
                                         <div class="input-group-append">
@@ -415,6 +436,7 @@
                                         type="text"
                                         class="form-control"
                                         placeholder="Id messenger"
+                                        id="messengerProductAdd"
                                         name="messengerProduct"
                                         maxlength="50"
                                         required
@@ -439,7 +461,7 @@
                     </div>
                     <div class="col-xl-7 col-lg-4 col-sm-12 p-5">
                         <div class="ps-form__total">
-                        <img src='img/users/default/fondo3.png' class="rounded mx-auto d-block" alt="fondo.png">
+                        <img src='img/users/default/fondo3.jpg' class="rounded mx-auto d-block" alt="fondo.png">
                             <h3 class="ps-form__heading">Ticket de Compra</h3>
                             <div class="content">
                                 <div class="ps-block--checkout-total">
@@ -447,42 +469,66 @@
                                     <p>Product</p>
                                     <p>Total</p>
                                 </div>
-                                    <?php 
-                                        // if(isset($_COOKIE["listSC"]) && json_decode($_COOKIE["listSC"]) != []){
-                                        //     $order=json_decode($_COOKIE["listSC"], true);
-                                        // }else{
-                                        //     echo '<script>
-                                        //             window.location="' . $path .'";
-                                        //     </script>';
-                                        //     return;
-                                        // }
-                                        // $order = array();
-                                    ?>
                                     <div class="ps-block__content">
                                         <table class="table ps-block__products">
                                             <tbody class="product_name_order">
-                                                <input type="hidden" class="nombreProduct" value="Abrigo de lana acolchado,Abrigo Trinde Lujo,Bandolera">
-                                                <input type="hidden" class="cantidad" value="1,2,3">
-                                                <input type="hidden" class="subtotal" value="900,800,400">
-                                                <input type="hidden" class="salesProduct" value="<?php //echo $pOrder->sales_product ?>">
-                                                <input type="hidden" class="stockProduct" value="<?php //echo $pOrder->stock_product ?>">
-                                                <input type="hidden" class="deliverytime" value="<?php //echo $pOrder->delivery_time_product ?>">
-                                                <input type="hidden" class="numerostar" value="<?php //echo $numero ?>">
-                                                <input type="hidden" class="estrellaStar" value="<?php //echo $estrella ?>">
-                                                <input type="hidden" id="envioSubmit" value="0">
-                                                <input type="hidden" id="pagoPrevProductSubmit" value="0">
+                                                <input type="hidden" id="nombrePDF" value="">
+                                                <?php if(is_array($tiketInfo)): ?>
+                                                    <?php foreach($tiketInfo as $key => $producto):?>
+                                                        <tr class="cla_<?php echo $key; ?>" >
+                                                            <td>
+                                                            <a href="<?php //echo $path.$pOrder->url_product ?>" class="name_producto"> <?php echo $producto["nombre"]; ?> (Talla: <span><?php echo $producto["talla"]; ?> </span>, Color:<span><?php echo $producto["color"]; ?> </span>)</a>  <button title="Eliminar" type="button" class="btn btn-danger rounded-circle mr-2" onclick="eliminarDeTicket('<?php echo $key; ?>')"><i class='fa fa-trash'></i></button>
+                                                            <div class="small text_secondary">
+                                                            <div>Cantidad:<strong><span class="quantityOrder"> <?php echo $producto["cantidad"]; ?>  </span></strong></div>
+                                                            </td>
+                                                            <td class="text-right"><div><span class="priceProd">$<?php echo $producto["precio"]; ?> </span></div></td> 
+                                                        </tr> 
+                                                    <?php endforeach;?>  
+                                                <?php endif;?>  
                                                 <tr>
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <h5 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Envio $ <span class="envioSubmit">0</span></h5>
-                                        <h5 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Pago Previo $ -<span class="PagoPrev_ticket">0</span></h5>
-                                        <h3 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Total $<span class="totalOrder_ticket"> 0</span></h3>
-                                        <div>Contacto:<strong><span class="telefonoTicket"> <?php //echo $count; ?></span></strong></div>
-                                        <div>Nombre:<strong><span class="nameTicket"> <?php //echo $count; ?></span></strong></div>
-                                        <div>Estacion:<strong><span class="estacionTicket"> <?php //echo $count; ?></span></strong></div>
-                                        <div>Fecha:<strong><span class="fechaTicket"> <?php //echo $count; ?></span></strong></div>
-                                        <div>Hora:<strong><span class="horaTicket"> <?php //echo $count; ?></span></strong></div>
+                                        <?php 
+                                        $totalTicket = 0;
+                                        $envio = 0;
+                                        $total = 0;
+                                        if(is_array($tiketInfo) && is_array($tiketContacto)){
+                                            if($tiketContacto["transporte"] == "Mexibus" || $tiketContacto["transporte"] == "Suburbano"){
+                                                $envio = 100;
+                                            }else if($tiketContacto["linea"] == "Línea B" || $tiketContacto["linea"] == "Línea 5" || $tiketContacto["linea"] == "Línea 2"){
+                                                $envio = 0;
+                                            }else{
+                                                $envio = 50;
+                                            }
+                                            foreach ($tiketInfo as $item) {
+                                                $total += $item['precio'] * $item['cantidad'];
+                                            }
+                                            $totalTicket = -$tiketContacto["pagoprev"] + $envio + $total;
+                                        } else if(is_array($tiketContacto)){
+                                            if($tiketContacto["transporte"] == "Mexibus" || $tiketContacto["transporte"] == "Suburbano"){
+                                                $envio = 100;
+                                            }else if($tiketContacto["linea"] == "Línea B" || $tiketContacto["linea"] == "Línea 5" || $tiketContacto["linea"] == "Línea 2"){
+                                                $envio = 0;
+                                            }else{
+                                                $envio = 50;
+                                            }
+                                            $totalTicket = -$tiketContacto["pagoprev"] + $envio;
+                                        }else if(is_array($tiketInfo)){
+                                            foreach ($tiketInfo as $item) {
+                                                $total += $item['precio'] * $item['cantidad'];
+                                            }
+                                            $totalTicket = $total;
+                                        }
+                                        ?>
+                                        <h5 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Envio $ <span class="envioSubmit"> <?php echo $envio; ?></span></h5>
+                                        <h5 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Pago Previo $ -<span class="PagoPrev_ticket"><?php $PagoPrev_ticket = (is_array($tiketContacto)) ? $tiketContacto["pagoprev"] : 0; echo $PagoPrev_ticket; ?></span></h5>
+                                        <h3 class="text-right totalOrder" total="<?php //echo $totalPriceSC2; ?>">Total $<span class="totalOrder_ticket"> <?php echo $totalTicket; ?></span></h3>
+                                        <div>Contacto:<strong><span class="telefonoTicket"> <?php $contacto = (is_array($tiketContacto)) ? $tiketContacto["telefono"] : ""; echo $contacto; ?></span></strong></div>
+                                        <div>Nombre:<strong><span class="nameTicket"> <?php $nameTicket = (is_array($tiketContacto)) ? $tiketContacto["nombre"] : ""; echo $nameTicket; ?></span></strong></div>
+                                        <div>Estacion:<strong><span class="estacionTicket"> <?php $estacionTicket = (is_array($tiketContacto)) ? $tiketContacto["Estacion"] : ""; echo $estacionTicket; ?></span></strong></div>
+                                        <div>Fecha:<strong><span class="fechaTicket"> <?php $fechaTicket = (is_array($tiketContacto)) ? $tiketContacto["dia"] : ""; echo $fechaTicket; ?></span></strong></div>
+                                        <div>Hora:<strong><span class="horaTicket"> <?php $horaTicket = (is_array($tiketContacto)) ? $tiketContacto["hora"] : ""; echo $horaTicket; ?></span></strong></div>
                                         <div class="text-center"><strong>Hecho en México por</strong></div>
                                         <div class="text-center">Altitex Services SA de CV</div>
                                         <div class="text-center">5564115039</div>
@@ -521,7 +567,8 @@
                                         </div>
                                     </div> -->
                                     <div class="d-flex flex-row-reverse">
-                                        <button title="PDF" type="button" class="ps-btn mt-5" onclick="pdfRegister('<?php echo TemplateController::path(); ?>')">Crear Ticket</button>
+                                        <button title="PDF" type="button" class="ps-btn mt-5" onclick="createOrder('<?php echo CurlController::api(); ?>')">Crear ORDEN</button>
+                                        <button title="PDF" type="button" class="ps-btn mt-5 mr-5" onclick="pdfRegister('<?php echo TemplateController::path(); ?>')">Crear Ticket</button>
                                     </div>
                         
                                     <?php endif; ?>

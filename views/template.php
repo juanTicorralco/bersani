@@ -282,7 +282,10 @@ if($totalPro->status == 200){
 
     <!-- Owl Carousel -->
     <link rel="stylesheet" href="css/plugins/owl.carousel.css">
-   
+
+    <!-- iconos -->
+    <title>Icono de WhatsApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!--=====================================
 	PLUGINS JS
 	======================================-->

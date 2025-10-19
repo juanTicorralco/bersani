@@ -28,8 +28,6 @@ if (!isset($_SESSION['user'])) {
             array_push($products, $response->result);
         }
     }
-    //   echo '<pre>'; print_r($response); echo '</pre>'; 
-    //                                      return;
 }
 ?>
 <!--=====================================

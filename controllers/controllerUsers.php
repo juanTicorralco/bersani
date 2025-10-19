@@ -847,7 +847,7 @@ class ControllerUser
                 $color =  explode("_", $_POST["ColorProduct"])[1];
                 $talla =  explode("_", $_POST["TallaProduct"])[1];
                 $idProduct =  explode("_", $_POST["SelectProduct"])[1];
-                $url = CurlController::api()."stocks?linkTo=id_product_stock,color_stock,size_stock&equalTo=".$idProduct.",".$color.",".$talla."&select=code_stock,id_stock,number_stock";
+                $url = CurlController::api()."stocks?linkTo=id_product_stock,color_stock,size_stock&equalTo=".$idProduct.",".$color.",".$talla."&select=code_stock,id_stock,number_stock&token=".$_SESSION["user"]->token_user;
                 $method= "GET";
                 $header= array();
                 $fields= array();
@@ -973,7 +973,7 @@ class ControllerUser
                 $color =  explode("_", $_POST["Coloredit"])[1];
                 $talla =  explode("_", $_POST["Tallaedit"])[1];
                 $idProduct =  explode("_", $_POST["Selectedit"])[1];
-                $url = CurlController::api()."stocks?linkTo=id_product_stock,color_stock,size_stock&equalTo=".$idProduct.",".$color.",".$talla."&select=code_stock,id_stock,number_stock";
+                $url = CurlController::api()."stocks?linkTo=id_product_stock,color_stock,size_stock&equalTo=".$idProduct.",".$color.",".$talla."&select=code_stock,id_stock,number_stock&token=".$_SESSION["user"]->token_user;
                 $method= "GET";
                 $header= array();
                 $fields= array();

@@ -94,7 +94,7 @@
                     <label>STOCK y PRECIOS<sup class="text-danger">*</sup></label>
                     <?php
                         $select = "id_stock,image_stock,number_stock,color_stock,color_hexa_stock,color_hexa_stock,price_product_stock,code_stock,size_stock";
-                        $url = CurlController::api()."stocks?linkTo=id_product_stock&equalTo=".$_GET["edit"]."&oderBy=color_stock&orderMode=ASC&select=".$select;
+                        $url = CurlController::api()."stocks?linkTo=id_product_stock&equalTo=".$_GET["edit"]."&oderBy=color_stock&orderMode=ASC&select=".$select."&token=".$_SESSION["user"]->token_user;
                         $method = "GET";
                         $fields = array();
                         $headers = array();

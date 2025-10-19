@@ -11,8 +11,8 @@ class CustomPdfGenerator extends TCPDF
         $textWidth = $this->GetStringWidth('Ticket de Compra');
         $posX = ($pageWidth - $textWidth) / 2; 
         $posY = 23;
-        $image_file = '../views/img/template/bersani2.png';
-        $this->Image($image_file, 80, 10, 50, '', 'PNG', '', 'T', false, 800, '', false, false, 0, false, false, false);
+        $image_file = '../views/img/template/bersani2.jpg';
+        $this->Image($image_file, 63, 10, 80, '', 'JPG', '', 'T', false, 800, '', false, false, 0, false, false, false);
         $posX = 80; 
         $posY = 23;
         $this->SetFont('helvetica', 'B', 20);
@@ -27,7 +27,7 @@ class CustomPdfGenerator extends TCPDF
         $this->SetFont('helvetica', 'I', 15);
         $this->Cell(0, 10, 'Gracias Por Tu Compra!', 0, false, 'C', 0, '', 0, false, 'T', 'M');
     }
-    public function printTable($header, $data)
+    public function printTable($header, $data, $pagoprev, $envio)
     {
         $this->SetFillColor(255, 255, 255);
         $this->SetTextColor(192);
@@ -49,24 +49,38 @@ class CustomPdfGenerator extends TCPDF
         $fill = 0;
         $total = 0;
         $Cantidad = 0;
-        foreach($data as $row) {
-            $this->Cell($w[0], 6, $row[0], 'LR', 0, 'L', $fill);
-            $this->Cell($w[1], 6, $row[1], 'LR', 0, 'C', $fill);
-            $this->Cell($w[2], 6, '$'.number_format($row[2]), 'LR', 0, 'C', $fill);
+        $precioTotal = 0;
+        foreach($data as $key => $row) {
+            if (strlen($row["nombre"]) > 33) {
+                $row["nombre"] = substr($row["nombre"], 0, 33) . '...';
+            }
+            $this->Cell($w[0], 6, $row["nombre"], 'LR', 0, 'L', $fill);
+            $this->Cell($w[1], 6, $row["cantidad"], 'LR', 0, 'C', $fill);
+            $this->Cell($w[2], 6, '$'.number_format($row["precio"]), 'LR', 0, 'C', $fill);
             $this->Ln();
             // $fill=!$fill;
-            $Cantidad+=$row[1];
-            $total+=$row[2];
+            $Cantidad+=$row["cantidad"];
+            $total+=$row["precio"];
+            $precioTotal += $row["cantidad"] * $row["precio"];
         }
         $this->Cell($w[0], 6, '', 'LR', 0, 'L', $fill);
         $this->Cell($w[1], 6, '', 'LR', 0, 'R', $fill);
         $this->Cell($w[2], 6, '', 'LR', 0, 'L', $fill);
         
         $this->Ln();
+        $this->Cell($w[0], 6, 'Envio', 'LR', 0, 'L', $fill);
+        $this->Cell($w[1], 6, "", 'LR', 0, 'C', $fill);
+        $this->Cell($w[2], 6, '$'.($envio), 'LR', 0, 'C', $fill);
+        $this->Cell(array_sum($w), 0, '', 'T');
+        $this->Ln();
+        $this->Cell($w[0], 6, 'Pago Previo', 'LR', 0, 'L', $fill);
+        $this->Cell($w[1], 6, "", 'LR', 0, 'C', $fill);
+        $this->Cell($w[2], 6, '-$'.($pagoprev), 'LR', 0, 'C', $fill);
+        $this->Cell(array_sum($w), 0, '', 'T');
+        $this->Ln();
         $this->Cell($w[0], 6, 'TOTAL', 'LR', 0, 'L', $fill);
         $this->Cell($w[1], 6, $Cantidad, 'LR', 0, 'C', $fill);
-        $this->Cell($w[2], 6, '$'.$total, 'LR', 0, 'C', $fill);
-        $this->Ln();
+        $this->Cell($w[2], 6, '$'.($precioTotal-$pagoprev+$envio), 'LR', 0, 'C', $fill);
         $this->Cell(array_sum($w), 0, '', 'T');
         $style = array(
             'border' => 2,
@@ -77,137 +91,20 @@ class CustomPdfGenerator extends TCPDF
             'module_width' => 1, // width of a single module in points
             'module_height' => 1 // height of a single module in points
         );
-        $this->write2DBarcode('www.tcpdf.org', 'QRCODE,H', $this->getPageWidth()/3, $this->getY() + 10, 70, 70, $style, 'N');
+        $this->write2DBarcode('https://www.facebook.com/marketplace/profile/100002298148973/?ref=permalink&mibextid=dXMIcH', 'QRCODE,H', $this->getPageWidth()/3, $this->getY() + 10, 70, 70, $style, 'N');
     }
 }
 class ControllerPDFCreate{
-    public $nombreProduct;
-    public $cantidad;
-    public $subtotal;
+    public $nombreCli;
+    public $contactoCli;
+    public $mesengerCLi;
+    public $estacionCli;
+    public $diaCli;
+    public $horaCli;
+    public $precioPrev;
+    public $envio;
     public $arrayTotal;
 
-    // public function AgregarAlStock(){        
-    //     if (!isset($_SESSION['user'])) {
-    //         echo '500';
-    //         return;
-    //     }else{
-    //         $time= time();
-    //         if($_SESSION["user"]->token_exp_user < $time){
-    //             echo '500';
-    //             return;
-    //         }else{
-    //             if($_SESSION["user"]->token_user !== "NULL" && $_SESSION["user"]->token_user !== ""){
-    //                 $dataStore = "stock_out_order=1";
-    //                 $url = CurlController::api()."orders?id=". $this->id."&nameId=id_order&token=".$_SESSION["user"]->token_user;
-    //                 $method = "PUT";
-    //                 $fields = $dataStore;
-    //                 $header = array(
-    //                 "Content-Type" => "application/x-www-form-urlencoded"
-    //                 );
-    //                 $updateOrder = CurlController::request($url,$method,$fields,$header);
-    //                 if($updateOrder->status == "200"){
-    //                     echo '200';
-    //                 }else{
-    //                     echo '400'; 
-    //                 }
-    //             }else{
-    //                 echo '500';
-    //             }
-    //         }
-    //     }
-    // }
-    // public function CancelarOrderDentroDeRegisters(){        
-    //     if (!isset($_SESSION['user'])) {
-    //         echo '500';
-    //         return;
-    //     }else{
-    //         $time= time();
-    //         if($_SESSION["user"]->token_exp_user < $time){
-    //             echo '500';
-    //             return;
-    //         }else{
-    //             if($_SESSION["user"]->token_user !== "NULL" && $_SESSION["user"]->token_user !== ""){
-    //                 $dataStore = "status_order=Cancelado";
-    //                 $url = CurlController::api()."orders?id=". $this->id."&nameId=id_order&token=".$_SESSION["user"]->token_user;
-    //                 $method = "PUT";
-    //                 $fields = $dataStore;
-    //                 $header = array(
-    //                 "Content-Type" => "application/x-www-form-urlencoded"
-    //                 );
-    //                 $updateOrder = CurlController::request($url,$method,$fields,$header);
-    //                 if($updateOrder->status == "200"){
-    //                     if($_POST["outStockOrder"] == 1){
-    //                         $dataStore = "number_stock=". $_POST["numStock"]+1 ;
-    //                         $url = CurlController::api()."stocks?id=". $this->idStock."&nameId=id_stock&token=".$_SESSION["user"]->token_user;
-    //                         $method = "PUT";
-    //                         $fields = $dataStore;
-    //                         $header = array(
-    //                         "Content-Type" => "application/x-www-form-urlencoded"
-    //                         );
-    //                         $updateStock = CurlController::request($url,$method,$fields,$header);
-    //                         if($updateStock->status == "200"){
-    //                             echo '200';    
-    //                         }else{
-    //                             $dataStore = "status_order=Pendiente";
-    //                             $url = CurlController::api()."orders?id=". $this->id."&nameId=id_order&token=".$_SESSION["user"]->token_user;
-    //                             $method = "PUT";
-    //                             $fields = $dataStore;
-    //                             $header = array(
-    //                             "Content-Type" => "application/x-www-form-urlencoded"
-    //                             );
-    //                             $updateOrder = CurlController::request($url,$method,$fields,$header);
-    //                             if($updateOrder->status == "200"){
-    //                                 echo '400';
-    //                             }
-    //                         }
-    //                     }else if($_POST["outStockOrder"] == 0){
-    //                         echo '200';
-    //                     }
-    //                 }else{
-    //                     echo '400'; 
-    //                 }
-    //             }else{
-    //                 echo '500';
-    //             }
-    //         }
-    //     }
-    // }
-    // public function confirmarFinalizarOrder(){        
-    //     if (!isset($_SESSION['user'])) {
-    //         echo '500';
-    //         return;
-    //     }else{
-    //         $time= time();
-    //         if($_SESSION["user"]->token_exp_user < $time){
-    //             echo '500';
-    //             return;
-    //         }else{
-    //             if($_SESSION["user"]->token_user !== "NULL" && $_SESSION["user"]->token_user !== ""){
-    //                 if( $this-> comment == "" ){
-    //                     $this-> comment = NULL;
-    //                 }
-    //                 if( $this-> gastos == "" ){
-    //                     $this-> gastos = NULL;
-    //                 }
-    //                 $dataStore = "status_order=". $this->statusOrder . "&comment_order=" . $this-> comment . "&bills_order=" . $this-> gastos;
-    //                 $url = CurlController::api()."orders?id=". $this->id."&nameId=id_order&token=".$_SESSION["user"]->token_user;
-    //                 $method = "PUT";
-    //                 $fields = $dataStore;
-    //                 $header = array(
-    //                 "Content-Type" => "application/x-www-form-urlencoded"
-    //                 );
-    //                 $updateOrder = CurlController::request($url,$method,$fields,$header);
-    //                 if($updateOrder->status == "200"){
-    //                     echo '200';
-    //                 }else{
-    //                     echo '400'; 
-    //                 }
-    //             }else{
-    //                 echo '500';
-    //             }
-    //         }
-    //     }
-    // }
     public function CrearTicketPDF(){
         $pdf = new CustomPdfGenerator(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -216,34 +113,21 @@ class ControllerPDFCreate{
         $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
         $pdf->setFontSubsetting(true);
         $pdf->SetFont('Times', '', 12, '', true);
-        // start a new page 
         $pdf->AddPage();
-        // date and invoice no 
-        // $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
-        // $pdf->writeHTML("<b>DATE:</b> 01/01/2021");
-        // $pdf->writeHTML("<b>INVOICE#</b>12");
-        // $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
-        // address 
-        // $pdf->writeHTML("84 Norton Street,");
-        // $pdf->writeHTML("NORMANHURST,");
-        // $pdf->writeHTML("New South Wales, 2076");
-        // $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
-        // bill to 
+        
         $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
         $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
         $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
         $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
-        $pdf->writeHTML("<b>Nombre:</b> Juan", true, false, false, false, 'R');
-        $pdf->writeHTML("<b>Contacto:</b> 5577673644", true, false, false, false, 'R');
-        $pdf->writeHTML("<b>Estacion:</b> Pantitlan", true, false, false, false, 'R');
-        $pdf->writeHTML("<b>Fecha y Hora:</b> 16/02/2024, 1:00", true, false, false, false, 'R');
+        $pdf->writeHTML("<b>Nombre:</b> " . $this -> nombreCli, true, false, false, false, 'R');
+        $pdf->writeHTML("<b>Contacto:</b> ". $this -> contactoCli, true, false, false, false, 'R');
+        $pdf->writeHTML("<b>Estacion:</b> ". $this -> estacionCli, true, false, false, false, 'R');
+        $pdf->writeHTML("<b>Fecha y Hora:</b> ". $this -> diaCli.", ". $this -> horaCli, true, false, false, false, 'R');
         $pdf->Write(0, "\n", '', 0, 'C', true, 0, false, false, 0);
         // invoice table starts here 
         $header = array('Producto', 'Cantidad', 'Sub-total');
         $data = $this -> arrayTotal;
-        $pdf->printTable($header, $data);
-        // $pdf->Ln();
-        // comments 
+        $pdf->printTable($header, $data, $this -> precioPrev, $this -> envio);
 
         $pdf->SetFont('', '', 12);
         $pdf->writeHTML("<b>Hecho en México por</b>", true, false, false, false, 'C');
@@ -256,39 +140,51 @@ class ControllerPDFCreate{
         $pdf->writeHTML("Si se requiere un cambio contactar con vendedor o repartidor", true, false, false, false, 'C');
         $pdf->writeHTML("Se requerira el ticket", true, false, false, false, 'C');
         // save pdf file 
-        $nombreArchivo= "invoice#12.pdf";
-        $pdf->Output(__DIR__ . '/'.$nombreArchivo, 'F');
-        if (file_exists($nombreArchivo)) {
-            echo 200;
+        $nameFile = "";
+        foreach($data as $key => $row) {
+            $nameFile.=$key;
+        }
+
+        $nameFile .= $this -> contactoCli . $this -> mesengerCLi;
+        $nombreArchivo= $nameFile . ".pdf";
+        $pdf->Output(dirname(__DIR__) . '/views/tickets/'.$nombreArchivo, 'F');
+        if (file_exists(dirname(__DIR__) . '/views/tickets/'.$nombreArchivo)) {
+            
+            echo json_encode([
+                'status' => 200, 
+                'file' => '/views/tickets/'.$nombreArchivo,
+                'archivo' => $nombreArchivo,
+                'telefono' => $this -> contactoCli,
+                'nombre' => $this -> nombreCli
+            ]);
         }else{
-            echo 400;
+            echo json_encode(['status' => 400]);
         }
     }
 }
-if(isset($_POST["nombreProduct"]) && isset($_POST["cantidad"]) && isset($_POST["subtotal"])){
+if(isset($_COOKIE["productos"]) && isset($_COOKIE["contacto"])){
+    $tiketContacto = json_decode($_COOKIE["contacto"], true);
     $pdfCreate = new ControllerPDFCreate();
-    $pdfCreate ->  nombreProduct = $_POST["nombreProduct"];
-    $pdfCreate ->  cantidad = $_POST["cantidad"];
-    $pdfCreate ->  subtotal = $_POST["subtotal"]; 
-    $pdfCreate ->  arrayTotal = json_decode($_POST["arrayTotal"]);
+    $pdfCreate ->  nombreCli = $tiketContacto["nombre"];
+    $pdfCreate ->  contactoCli = $tiketContacto["telefono"];
+    $pdfCreate ->  mesengerCLi = $tiketContacto["messer"];
+    $pdfCreate ->  estacionCli = $tiketContacto["Estacion"];
+    $pdfCreate ->  diaCli = $tiketContacto["dia"];
+    $pdfCreate ->  horaCli = $tiketContacto["hora"];
+    $pdfCreate ->  precioPrev = $tiketContacto["pagoprev"];
+    $envioPre=0;
+    if($tiketContacto["transporte"] == "Mexibus" || $tiketContacto["transporte"] == "Suburbano"){
+        $envioPre = 100;
+    }else if($tiketContacto["linea"] == "Línea B" || $tiketContacto["linea"] == "Línea 5" || $tiketContacto["linea"] == "Línea 2"){
+        $envioPre = 0;
+    }else{
+        $envioPre = 50;
+    }
+    $pdfCreate ->  envio = $envioPre;
+    $pdfCreate ->  arrayTotal = json_decode($_COOKIE["productos"], true);
     $pdfCreate -> CrearTicketPDF();
+
+}else{
+    echo json_encode(['status' => 400]);
 }
-// else if(isset($_POST["statusorder"]) && isset($_POST["idOrder"])){
-//     $idOrder = new ControllerModifyStock();
-//     if(isset($_POST["comment"]) && $_POST["comment"] !== NULL){
-//         $idOrder ->  comment = $_POST["comment"];
-//         $idOrder ->  gastos = $_POST["gastos"];         
-//     }
-//     if(isset($_POST["gastos"]) && $_POST["gastos"] !== NULL){
-//         $idOrder ->  comment = $_POST["comment"];
-//         $idOrder ->  gastos = $_POST["gastos"];        
-//     }
-//     $idOrder ->  id = $_POST["idOrder"];
-//     $idOrder ->  statusOrder = $_POST["statusorder"];
-//     $idOrder -> confirmarFinalizarOrder();
-// } else if(isset($_POST["idOrder"])){
-//     $idOrder = new ControllerModifyStock();
-//     $idOrder ->  id = $_POST["idOrder"];
-//     $idOrder -> AgregarAlStock();
-// }
 ?>

@@ -309,3 +309,110 @@ a.jo {
     display: none;
   }
 }
+
+.modal-container {
+  background-color: #343a40; /* Fondo más oscuro */
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.modal-container .font-weight-bold {
+  color: #ffffff; /* Texto blanco */
+  padding: 5px;
+}
+
+.modal-container .row {
+  margin-bottom: 10px;
+}
+
+.modal-container .col-4.d-flex, .modal-container .col-8.d-flex {
+  padding: 5px;
+  border: 1px solid #ffffff; /* Bordes blancos alrededor de las columnas */
+  border-radius: 20px;
+}
+
+.modal-container .text-right {
+  text-align: right;
+}
+
+.modal-container .col-8 {
+  color: #f8f9fa; /* Color de texto más claro para mejor visibilidad */
+}
+
+.btn-circle{
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-circle.btn-acciones1 {
+  width: 40px;
+  height: 40px;  
+  margin: 5px 100px 5px 100px;
+}
+
+.btn-circle.btn-acciones2 {
+  width: 30px;
+  height: 30px;
+  margin: 5px 10px 5px 10px;
+}
+
+.btn-circle.btn-acciones3 {
+  width: 50px;
+  height: 50px;
+  margin: 0;
+}
+
+.btn-circle i {
+  font-size: 24px; /* Ajusta el tamaño del icono según sea necesario */
+}
+.btn-circle.btn-acciones2 i {
+  font-size: 15px; /* Ajusta el tamaño del icono según sea necesario */
+}
+
+.form-control.text-white.border.rounded-pill.d-flex.justify-content-center.align-items-center:focus{
+  color: #000000 !important;
+}
+
+.table-rounded {
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+/* Estilos para el tooltip */
+.tooltiper {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltiper .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 70%; /* Cambiado de bottom a top */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltiper:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.centerText {
+  text-align: center;
+  align-content: center;
+}
+
+div:where(.swal2-container) {
+  z-index: 10000 !important; /* Asegúrate de que este valor sea mayor que el z-index del modal */
+}

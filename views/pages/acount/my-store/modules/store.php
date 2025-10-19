@@ -17,8 +17,6 @@
         $storeResult = CurlController::request($url,$method,$fields,$headers)->result;
         $reviews = 1;
     }
-    // print_r($storeResult);
-    // return;
 ?>
 <div class="ps-section__left">
 

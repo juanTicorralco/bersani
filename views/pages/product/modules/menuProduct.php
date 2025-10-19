@@ -205,9 +205,7 @@
                             $rand = array(0,1,2,3,4);
                         }
                     }
-                    // echo '<pre>'; print_r($rand); echo '</pre>'; 
                     foreach ($rand as $key => $value) : ?>
-
                         <div class="media border p-3 mb-3">
                             <?php if (empty($allReview[$value]["user"])) : ?>
                                 <img class="mr-5 mt-1 rounded-circle" style="width: 80px;" src="img/users/default/default.png" alt="<?php echo $producter->name_user; ?>">

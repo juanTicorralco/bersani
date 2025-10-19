@@ -33,9 +33,9 @@ if (!isset($_SESSION['user'])) {
             //         array_push($products, $response->result);
             //     }
             // }else{
-                $url= CurlController::api()."relations?rel=products,categories&type=product,category&select=".$select;
+                $url= CurlController::api()."relations?rel=products,categories&type=product,category&linkTo=status_product&equalTo=1&select=".$select;
                 $response= CurlController::request($url, $method, $header, $filds);
-                if($response->status == 200){
+                if(isset($response) && $response->status == 200){
                     array_push($products, $response->result);
                 }
 
@@ -108,10 +108,10 @@ My Account Content
                                 <tr >
                                     <?php
                                         $stockProduct = [];
-                                         $select="number_stock";
-                                         $url= CurlController::api()."stocks?linkTo=id_product_stock&equalTo=".$value->id_product."&counTo=color_stock,size_stock&select=".$select;
+                                         $select="number_stock,id_stock";
+                                         $url= CurlController::api()."stocks?linkTo=id_product_stock,status_stock&equalTo=".$value->id_product.",1&counTo=color_stock,size_stock&select=".$select."&token=".$_SESSION["user"]->token_user."&rol=admin";
                                          $response= CurlController::request($url, $method, $header, $filds);
-                                         if($response->status == 200){
+                                         if(isset($response) && $response->status == 200){
                                              array_push($stockProduct, $response->result);
                                          }
                                     ?>
@@ -155,6 +155,8 @@ My Account Content
                                         <!-- <a target="_blank" class="btn btn-success rounded-circle mr-2"><i class='fa  fa-check-square'></i></a> -->
                                         <a href="<?php echo TemplateController::path();?>acount&inventario?view=<?php echo $value->id_product;?>" class="btn btn-dark text-white rounded-circle mr-2"><i class='fa fa-eye'></i></a>
                                         <a href="<?php echo TemplateController::path();?>acount&inventario?edit=<?php echo $value->id_product;?>" class="btn btn-info text-white rounded-circle mr-2"><i class='fa fa-pencil-alt'></i></a>
+                                        <?php 
+                                        ?>
                                         <button title="Eliminar" type="button" class="btn btn-danger rounded-circle mr-2" onclick="eliminarInventarioTotal(<?php echo $value->id_product ?>,'<?php echo CurlController::api(); ?>','<?php echo TemplateController::path(); ?>')"><i class='fa fa-trash'></i></button>
 
                                     </td>

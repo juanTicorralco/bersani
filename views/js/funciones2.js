@@ -96,7 +96,10 @@ function switAlert(type, text, url, icon, time) {
           showCancelButton: true,
           confirmButtonColor: '#3085d6',
           cancelButtonColor: '#d33',
-          confirmButtonText: 'Estoy seguro!'
+          confirmButtonText: 'Estoy seguro!',
+          customClass: {
+            popup: 'swal2-z-index'
+          }
         }).then(function(result){
           resolve(result.value);
         });

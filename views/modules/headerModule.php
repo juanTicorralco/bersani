@@ -98,12 +98,13 @@ if (isset($_SESSION["user"])) {
 
                                                     $menuSubcategories = CurlController::request($url, $method, $field, $header)->result;
                                                     ?>
-
-                                                    <?php foreach ($menuSubcategories as $key => $value) : ?>
-                                                        <li><a href="<?php echo $path . $value->url_subcategory; ?>">
-                                                                <?php echo $value->name_subcategory; ?> </a>
-                                                        </li>
-                                                    <?php endforeach; ?>
+                                                    <?php if (is_array($menuSubcategories)) : ?>
+                                                        <?php foreach ($menuSubcategories as $key => $value) :  ?>
+                                                            <li><a href="<?php echo $path . $value->url_subcategory; ?>">
+                                                                    <?php echo $value->name_subcategory;  ?> </a>
+                                                            </li>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
 
                                                 </ul>
                                             </div>

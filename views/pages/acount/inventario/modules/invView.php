@@ -4,7 +4,7 @@
   $method= "GET";
   $header= array();
   $filds= array();
-  $url= CurlController::api()."relations?rel=stocks,products,categories&type=stock,product,category&linkTo=id_product&equalTo=".$_GET["view"]."&orderBy=color_stock&orderMode=DESC&select=".$select;
+  $url= CurlController::api()."relations?rel=stocks,products,categories&type=stock,product,category&linkTo=id_product&equalTo=".$_GET["view"]."&orderBy=color_stock&orderMode=DESC&select=".$select."&token=".$_SESSION["user"]->token_user;
   $response= CurlController::request($url, $method, $header, $filds);
   if($response->status == 200){
       array_push($viewProd, $response->result);
